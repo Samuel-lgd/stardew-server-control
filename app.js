@@ -87,7 +87,7 @@
       if (result.ok && result.body && result.body.public_ip) {
         const ip = `${result.body.public_ip}${PORT_SUFFIX}`;
         ipEl.textContent = ip;
-        setStatus(`Instance ${result.body.instance_state} — adresse prête à être partagée`, "success");
+        setStatus(`Instance ${result.body.instance_state} — adresse récupérée`, "success");
         return ip;
       }
 

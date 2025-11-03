@@ -630,7 +630,8 @@ body::before{
   }
 
   .window-title{
-    font-size:18px;
+    font-size:17px;
+    padding: 8px 14px;
   }
 
   .pw-card{
@@ -650,6 +651,11 @@ body::before{
     padding:20px 18px 18px;
   }
 
+  .actions-title{
+    font-size:10px;
+    padding:7px 10px;
+  }
+
   .button-bar{
     padding:12px;
   }
@@ -658,12 +664,16 @@ body::before{
     padding:22px 18px 18px;
   }
 
+  .ip-display{
+    padding: 1px;
+  }
+
   .ip-tag{
     letter-spacing:0.16em;
   }
 
   .ip-value{
-    font-size:13px;
+    font-size:12px;
     letter-spacing:0.12em;
   }
 
