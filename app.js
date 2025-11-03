@@ -1,8 +1,8 @@
 (() => {
   const API_BASE = "https://kz2pltyay2yrlyh6l6medjnji40sladd.lambda-url.us-east-1.on.aws";
   const PORT_SUFFIX = ":24642";
-  const POLL_INTERVAL = 3000;
-  const POLL_MAX = 20;
+  const POLL_INTERVAL = 5000;
+  const POLL_MAX = 5;
 
   const passwordInput = document.getElementById("pw");
   const statusEl = document.getElementById("status");
@@ -154,17 +154,9 @@
 
   function launchStardew(platform) {
     if (platform === "ios") {
-      // Attempt the direct app scheme then fallback to the App Store.
-      window.location.href = "stardewvalley://run-game";
-      setTimeout(() => {
-        window.location.href = "https://apps.apple.com/app/id1406710800";
-      }, 800);
+      window.location.href = "https://apps.apple.com/app/id1406710800";
     } else if (platform === "android") {
-      // Intent URL opens the game if installed, falls back to Play Store otherwise.
-      window.location.href = "intent://stardewlaunch#Intent;scheme=stardewvalley;package=com.chucklefish.stardewvalley;end";
-      setTimeout(() => {
-        window.location.href = "https://play.google.com/store/apps/details?id=com.chucklefish.stardewvalley";
-      }, 800);
+      window.location.href = "https://play.google.com/store/apps/details?id=com.chucklefish.stardewvalley";
     }
   }
 
