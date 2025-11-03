@@ -142,7 +142,6 @@
   async function copyIpToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
-      alert(`Copié: ${text}`);
     } catch (error) {
       const area = document.createElement("textarea");
       area.value = text;
@@ -150,7 +149,6 @@
       area.select();
       document.execCommand("copy");
       area.remove();
-      alert(`Copié: ${text}`);
     }
   }
 

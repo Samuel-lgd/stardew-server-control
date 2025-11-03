@@ -531,6 +531,7 @@ body::before{
   font-family:'Press Start 2P',cursive;
   position:relative;
   overflow:hidden;
+  line-height: 22px;
 }
 
 .btn-launch:active{
