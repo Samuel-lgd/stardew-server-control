@@ -1,96 +1,62 @@
 <!doctype html>
-<html>
+<html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Contrôle serveur</title>
-<style>
-body{font-family:Arial; padding:20px; max-width:480px}
-button{margin:5px 0;padding:8px 12px}
-#ip{font-weight:600}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contrôle du serveur Stardew</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+
+<script src="app.js" defer></script>
 </head>
 <body>
-<h3>Contrôle serveur</h3>
-<input id="pw" type="password" placeholder="Mot de passe" style="width:100%"/><br>
-<button id="start">Démarrer</button>
-<button id="stop">Arrêter</button>
-<button id="refresh">Récupérer IP</button>
-<p id="status">—</p>
-<p>IP : <span id="ip">aucune</span>
-<button id="copy" style="display:inline-block">Copier</button></p>
+<div class="app">
+  <div class="window">
+    <div class="window-top">
+    <header class="window-header">
+      <h1 class="window-title">Samuel & Laura's Meadows</h1>
+      <p class="window-subtitle">Gestionnaire de serveur</p>
+    </header>
 
-<script>
-const API_BASE = "https://kz2pltyay2yrlyh6l6medjnji40sladd.lambda-url.us-east-1.on.aws"; // remplace
-const PORT_SUFFIX = ":24642";
-const POLL_INTERVAL = 3000; // ms
-const POLL_MAX = 20; // essais
+    <div class="controls">
+      <div class="pw-card">
+        <div class="pw-heading">
+          <span class="pw-badge">Acces securise</span>
+        </div>
+        <div class="field">
+          <label class="label" for="pw">Mot de passe</label>
+          <input class="input" id="pw" type="password" placeholder="Entrez votre mot secret">
+        </div>
+      </div>
 
-function hdrs(pw){
-  return { "X-Password": pw };
-}
+      <div class="actions-card">
+        <p class="label actions-title">Actions du serveur</p>
+        <div class="button-bar">
+          <button class="btn btn-start" id="start" type="button">Démarrer</button>
+          <button class="btn btn-stop" id="stop" type="button">Arrêter</button>
+          <button class="btn btn-refresh" id="refresh" type="button">Récupérer l'adresse</button>
+        </div>
+      </div>
+    </div>
 
-async function request(action){
-  const pw = document.getElementById("pw").value;
-  if(!pw){ alert("Mot de passe requis"); return null; }
-  const url = API_BASE + "?action=" + encodeURIComponent(action);
-  try {
-    const r = await fetch(url, { method:"GET", headers: hdrs(pw) });
-    const txt = await r.text();
-    try { return { ok: r.ok, body: JSON.parse(txt), status: r.status }; } 
-    catch(e){ return { ok:r.ok, body: txt, status:r.status }; }
-  } catch(e){
-    return { ok:false, error: e.toString() };
-  }
-}
+    <div class="status" id="status">Renseignez un mot de passe et effectuez une action.</div>
+    </div>
 
-async function pollForIP(){
-  document.getElementById("status").innerText = "Recherche de l'IP...";
-  for(let i=0;i<POLL_MAX;i++){
-    const res = await request("get-ip");
-    if(!res) break;
-    if(res.ok && res.body && res.body.public_ip){
-      const ip = res.body.public_ip;
-      document.getElementById("ip").innerText = ip + PORT_SUFFIX;
-      document.getElementById("status").innerText = "Instance " + res.body.instance_state;
-      return ip;
-    }
-    document.getElementById("status").innerText = `Essai ${i+1}/${POLL_MAX} — état: ${res.body?.instance_state || 'inconnu'}`;
-    await new Promise(r=>setTimeout(r,POLL_INTERVAL));
-  }
-  document.getElementById("status").innerText = "IP non disponible (timeout).";
-  return null;
-}
-
-document.getElementById("start").addEventListener("click", async ()=>{
-  document.getElementById("status").innerText = "Envoi start...";
-  await request("start");
-  await pollForIP();
-});
-
-document.getElementById("stop").addEventListener("click", async ()=>{
-  document.getElementById("status").innerText = "Envoi stop...";
-  await request("stop");
-  // clear ip
-  document.getElementById("ip").innerText = "aucune";
-});
-
-document.getElementById("refresh").addEventListener("click", async ()=>{
-  await pollForIP();
-});
-
-document.getElementById("copy").addEventListener("click", async ()=>{
-  const text = document.getElementById("ip").innerText;
-  if(!text || text === "aucune"){ alert("Aucune IP à copier"); return; }
-  try{
-    await navigator.clipboard.writeText(text);
-    alert("Copié: " + text);
-  }catch(e){
-    // fallback
-    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); ta.remove();
-    alert("Copié: " + text);
-  }
-});
-</script>
+    <div class="ip-card">
+      <div class="ip-top">
+        <div class="label">Adresse du serveur</div>
+        <span class="ip-tag" aria-hidden="true">Launchpad</span>
+      </div>
+      <div class="ip-display">
+        <div class="ip-value" id="ip">aucune</div>
+      </div>
+      <div class="ip-launch">
+        <button class="btn btn-launch" id="launch" type="button">Lancer Stardew</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
