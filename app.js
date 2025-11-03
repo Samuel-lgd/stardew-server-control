@@ -13,7 +13,7 @@
   const launchBtn = document.getElementById("launch");
 
   const STATUS_PREFIX = {
-    info: "[INFO]",
+    info: "",
     success: "[OK]",
     warning: "[ALERTE]",
     error: "[ERREUR]",
@@ -157,7 +157,7 @@
   function launchStardew(platform) {
     if (platform === "ios") {
       // Attempt the direct app scheme then fallback to the App Store.
-      window.location.href = "stardewvalley://";
+      window.location.href = "stardewvalley://run-game";
       setTimeout(() => {
         window.location.href = "https://apps.apple.com/app/id1406710800";
       }, 800);

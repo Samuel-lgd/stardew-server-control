@@ -620,8 +620,12 @@ body::before{
 }
 
 @media (max-width:520px){
-  .window{
-    padding:28px 22px;
+  .window-top{
+    padding:22px;
+  }
+
+  .status {
+    font-size: 10px;
   }
 
   .window-title{
