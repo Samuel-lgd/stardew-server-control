@@ -177,9 +177,10 @@
     launchStardew(platform);
   });
 
-  passwordInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      startBtn.click();
+  passwordInput.addEventListener("keydown", async (event) => {
+    if (["Enter", "Go", "Done"].includes(event.key)) {
+      event.preventDefault();
+      await pollForIP();
     }
   });
 })();

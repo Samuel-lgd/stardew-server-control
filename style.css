@@ -429,19 +429,6 @@ body::before{
   color:var(--text);
 }
 
-.ip-tag{
-  font-family:'Press Start 2P',cursive;
-  font-size:10px;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  padding:9px 14px 8px;
-  background:linear-gradient(180deg,rgba(255,250,236,0.8) 0%,rgba(255,200,120,0.55) 100%);
-  border:2px dashed rgba(210,122,38,0.45);
-  border-radius:12px;
-  color:var(--accent-dark);
-  box-shadow:0 6px 0 rgba(201,161,125,0.55);
-}
-
 .ip-display{
   position:relative;
   padding:20px;
@@ -666,10 +653,6 @@ body::before{
 
   .ip-display{
     padding: 1px;
-  }
-
-  .ip-tag{
-    letter-spacing:0.16em;
   }
 
   .ip-value{
