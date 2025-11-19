@@ -9,10 +9,15 @@ const passwordInput = document.getElementById('password-input');
 const consoleOutput = document.getElementById('console-output');
 const ipDisplay = document.getElementById('ip-address');
 
+// Status Elements
+const statusEc2 = document.getElementById('status-ec2');
+const statusServer = document.getElementById('status-server');
+
 const btnStart = document.getElementById('btn-start');
 const btnStop = document.getElementById('btn-stop');
 const btnRefresh = document.getElementById('btn-refresh');
 const btnCopyLaunch = document.getElementById('btn-copy-launch');
+const btnLogin = document.getElementById('btn-login');
 
 let currentPassword = "";
 let pollInterval = null;
@@ -60,6 +65,24 @@ async function callApi(action) {
   }
 }
 
+// Helper to update status item
+function setStatus(element, status) {
+  // Reset classes
+  element.classList.remove('online', 'offline', 'pending');
+  const valueEl = element.querySelector('.status-value');
+
+  if (status === 'running' || status === 'online') {
+    element.classList.add('online');
+    valueEl.textContent = "Allumé";
+  } else if (status === 'stopped' || status === 'offline') {
+    element.classList.add('offline');
+    valueEl.textContent = "Éteint";
+  } else {
+    element.classList.add('pending');
+    valueEl.textContent = status.toUpperCase();
+  }
+}
+
 // UI Updates
 function updateStatusUI(data) {
   if (!data) return;
@@ -70,6 +93,10 @@ function updateStatusUI(data) {
   } else {
     ipDisplay.textContent = "---.---.---.---";
   }
+
+  // Update Status Indicators
+  setStatus(statusEc2, data.ec2_status);
+  setStatus(statusServer, data.server_status);
 
   // Buttons Logic
   btnStart.classList.add('hidden');
@@ -117,17 +144,17 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedPassword) {
     passwordInput.value = savedPassword;
     rememberMeCheckbox.checked = true;
-    // Optional: Auto-login if desired, but user might want to just have it filled
-    // Let's just fill it for now, or maybe auto-focus the button?
-    // User asked for "se souvenir", usually implies pre-filling.
   }
 });
+
 async function handleLogin() {
   const pwd = passwordInput.value.trim();
   if (!pwd) return;
   currentPassword = pwd;
   log("Authentification...", "info");
+
   const success = await checkStatus();
+
   if (success) {
     // Handle Remember Me
     if (rememberMeCheckbox.checked) {
@@ -135,16 +162,18 @@ async function handleLogin() {
     } else {
       localStorage.removeItem('stardew_password');
     }
-    // Show controls and IP card
+
+    // Hide login, show dashboard
+    loginSection.classList.add('hidden');
     mainInterface.classList.remove('hidden');
     ipCard.classList.remove('hidden');
-    // Hide login input to clean up UI? Or keep it? 
-    // User said "reprends l'UI de old_app", old_app has input visible.
-    // But we want to prevent re-typing. Let's keep it but maybe blur it.
+
     passwordInput.blur();
   } else {
     passwordInput.value = "";
     passwordInput.focus();
+    // Ensure login is visible if it failed (though it should be already)
+    loginSection.classList.remove('hidden');
   }
 }
 
@@ -203,6 +232,8 @@ function copyAndLaunch() {
 passwordInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') handleLogin();
 });
+
+btnLogin.addEventListener('click', handleLogin);
 
 btnRefresh.addEventListener('click', checkStatus);
 btnStart.addEventListener('click', startServer);
