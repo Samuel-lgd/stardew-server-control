@@ -1,64 +1,73 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contrôle du serveur Stardew</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link href="style.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contrôle du serveur Stardew</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
 
-<link rel="icon" type="image/x-icon" href="apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="assets/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
-<script src="app.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
+
 <body>
-<div class="app">
-  <div class="window">
-    <div class="window-top">
-    <header class="window-header">
-      <h1 class="window-title">Samuel & Laura's Meadows</h1>
-      <p class="window-subtitle">Gestionnaire de serveur</p>
-    </header>
+  <div class="app">
+    <div class="window">
+      <div class="window-top">
+        <header class="window-header">
+          <h1 class="window-title">Samuel & Laura's Meadows</h1>
+          <p class="window-subtitle">Gestionnaire de serveur</p>
+        </header>
 
-    <div class="controls">
-      <div class="pw-card">
-        <div class="pw-heading">
-          <span class="pw-badge">Acces securise</span>
+        <div class="controls">
+          <div id="login-section" class="pw-card">
+            <div class="pw-heading">
+              <span class="pw-badge">Acces securise</span>
+            </div>
+            <div class="field">
+              <input class="input" id="password-input" type="password" placeholder="Entrez votre mot secret">
+              <div class="remember-me">
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Se souvenir de moi</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="main-interface" class="hidden">
+            <div class="actions-card">
+              <p class="label actions-title">Actions du serveur</p>
+              <div class="button-bar">
+                <button class="btn btn-start hidden" id="btn-start" type="button">Démarrer</button>
+                <button class="btn btn-stop hidden" id="btn-stop" type="button">Arrêter</button>
+                <button class="btn btn-refresh" id="btn-refresh" type="button">Actualiser</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <label class="label" for="pw">Mot de passe</label>
-          <input class="input" id="pw" type="password" placeholder="Entrez votre mot secret" >
+
+        <div class="status" id="console-output">En attente de connexion...</div>
+      </div>
+
+      <div id="ip-card" class="ip-card hidden">
+        <div class="ip-top">
+          <div class="label">Adresse du serveur</div>
         </div>
-      </div>
-
-      <div class="actions-card">
-        <p class="label actions-title">Actions du serveur</p>
-        <div class="button-bar">
-          <button class="btn btn-start" id="start" type="button">Démarrer</button>
-          <button class="btn btn-stop" id="stop" type="button">Arrêter</button>
-          <button class="btn btn-refresh" id="refresh" type="button">Récupérer l'adresse</button>
+        <div class="ip-display">
+          <div class="ip-value" id="ip-address">---.---.---.---</div>
         </div>
-      </div>
-    </div>
-
-    <div class="status" id="status">Renseignez un mot de passe et effectuez une action.</div>
-    </div>
-
-    <div class="ip-card">
-      <div class="ip-top">
-        <div class="label">Adresse du serveur</div>
-      </div>
-      <div class="ip-display">
-        <div class="ip-value" id="ip">aucune</div>
-      </div>
-      <div class="ip-launch">
-        <button class="btn btn-launch" id="launch" type="button">Copier & lancer Stardew</button>
+        <div class="ip-launch">
+          <button class="btn btn-launch" id="btn-copy-launch" type="button">Copier & Lancer</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </body>
+
 </html>
