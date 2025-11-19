@@ -32,7 +32,12 @@
               <span class="pw-badge">Acces securise</span>
             </div>
             <div class="field">
-              <input class="input" id="password-input" type="password" placeholder="Entrez votre mot secret">
+              <div class="input-group">
+                <input class="input" id="password-input" type="password" placeholder="Entrez votre mot secret">
+                <button class="btn-enter" id="btn-login" type="button" aria-label="Valider">
+                  ➜
+                </button>
+              </div>
               <div class="remember-me">
                 <input type="checkbox" id="remember-me">
                 <label for="remember-me">Se souvenir de moi</label>
@@ -41,12 +46,30 @@
           </div>
 
           <div id="main-interface" class="hidden">
-            <div class="actions-card">
-              <p class="label actions-title">Actions du serveur</p>
-              <div class="button-bar">
-                <button class="btn btn-start hidden" id="btn-start" type="button">Démarrer</button>
-                <button class="btn btn-stop hidden" id="btn-stop" type="button">Arrêter</button>
-                <button class="btn btn-refresh" id="btn-refresh" type="button">Actualiser</button>
+            <div class="server-dashboard">
+              <div class="status-grid">
+                <div class="status-item" id="status-ec2">
+                  <div class="status-item-header">
+                    <div class="status-icon"></div>
+                    <div class="status-label">Instance Amazon</div>
+                  </div>
+                  <div class="status-value">---</div>
+                </div>
+                <div class="status-item" id="status-server">
+                  <div class="status-item-header">
+                    <div class="status-icon"></div>
+                    <div class="status-label">Serveur Stardew</div>
+                  </div>
+                  <div class="status-value">---</div>
+                </div>
+              </div>
+
+              <div class="control-bar">
+                <button class="btn btn-start hidden" id="btn-start" type="button">Démarrer le serveur</button>
+                <button class="btn btn-stop hidden" id="btn-stop" type="button">Arrêter le serveur</button>
+                <button class="btn btn-refresh-icon" id="btn-refresh" type="button" aria-label="Actualiser">
+                  ↻
+                </button>
               </div>
             </div>
           </div>
