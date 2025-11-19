@@ -1,186 +1,210 @@
-(() => {
-  const API_BASE = "https://kz2pltyay2yrlyh6l6medjnji40sladd.lambda-url.us-east-1.on.aws";
-  const PORT_SUFFIX = ":24642";
-  const POLL_INTERVAL = 5000;
-  const POLL_MAX = 5;
+// Configuration
+const LAMBDA_URL = "https://kz2pltyay2yrlyh6l6medjnji40sladd.lambda-url.us-east-1.on.aws";
 
-  const passwordInput = document.getElementById("pw");
-  const statusEl = document.getElementById("status");
-  const ipEl = document.getElementById("ip");
-  const startBtn = document.getElementById("start");
-  const stopBtn = document.getElementById("stop");
-  const refreshBtn = document.getElementById("refresh");
-  const launchBtn = document.getElementById("launch");
+// DOM Elements
+const loginSection = document.getElementById('login-section');
+const mainInterface = document.getElementById('main-interface');
+const ipCard = document.getElementById('ip-card');
+const passwordInput = document.getElementById('password-input');
+const consoleOutput = document.getElementById('console-output');
+const ipDisplay = document.getElementById('ip-address');
 
-  const STATUS_PREFIX = {
-    info: "",
-    success: "[OK]",
-    warning: "[ALERTE]",
-    error: "[ERREUR]",
-  };
+const btnStart = document.getElementById('btn-start');
+const btnStop = document.getElementById('btn-stop');
+const btnRefresh = document.getElementById('btn-refresh');
+const btnCopyLaunch = document.getElementById('btn-copy-launch');
 
-  function setStatus(message, tone = "info") {
-    const prefix = STATUS_PREFIX[tone] || STATUS_PREFIX.info;
-    statusEl.textContent = `>> ${prefix} ${message}`;
-    if (tone === "info") {
-      delete statusEl.dataset.tone;
-      return;
-    }
-    statusEl.dataset.tone = tone;
-  }
+let currentPassword = "";
+let pollInterval = null;
 
-  setStatus(statusEl.textContent || "", "info");
+// Logger
+function log(message, type = "info") {
+  consoleOutput.textContent = message;
+  // Reset tone
+  consoleOutput.removeAttribute('data-tone');
 
-  function hasPassword() {
-    const pw = passwordInput.value.trim();
-    if (!pw) {
-      alert("Mot de passe requis");
-      passwordInput.focus();
-      return false;
-    }
-    return pw;
-  }
+  if (type === "success") consoleOutput.setAttribute('data-tone', 'success');
+  else if (type === "error") consoleOutput.setAttribute('data-tone', 'error');
+  else if (type === "warning") consoleOutput.setAttribute('data-tone', 'warning');
+}
 
-  function headers(pw) {
-    return { "X-Password": pw };
-  }
-
-  async function request(action) {
-    const pw = hasPassword();
-    if (!pw) {
-      return null;
-    }
-
-    const url = `${API_BASE}?action=${encodeURIComponent(action)}`;
-    try {
-      const response = await fetch(url, { method: "GET", headers: headers(pw) });
-      const rawText = await response.text();
-      try {
-        return { ok: response.ok, body: JSON.parse(rawText), status: response.status };
-      } catch (parseError) {
-        return { ok: response.ok, body: rawText, status: response.status };
-      }
-    } catch (error) {
-      return { ok: false, error: error.toString() };
-    }
-  }
-
-  async function pollForIP() {
-    setStatus("Recherche de l'IP de la ferme distante", "info");
-
-    for (let attempt = 0; attempt < POLL_MAX; attempt += 1) {
-      const result = await request("get-ip");
-      if (!result) {
-        return null;
-      }
-
-      if (result.status == 403) {
-        setStatus("Mot de passe refusé", "error");
-        return null;
-      }
-
-      if (!result.ok) {
-        setStatus(`Incident réseau (${result.status || result.error})`, "error");
-        return null;
-      }
-
-      if (result.ok && result.body && result.body.public_ip) {
-        const ip = `${result.body.public_ip}${PORT_SUFFIX}`;
-        ipEl.textContent = ip;
-        setStatus(`Instance ${result.body.instance_state} — adresse récupérée`, "success");
-        return ip;
-      }
-
-      const state = result.body?.instance_state || "inconnu";
-      setStatus(`Lecture ${attempt + 1}/${POLL_MAX} — état actuel: ${state}`, "info");
-      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-    }
-
-    setStatus("IP non disponible après plusieurs tentatives", "warning");
+// API Call
+async function callApi(action) {
+  if (!LAMBDA_URL) {
+    log("Error: Lambda URL not configured", "error");
     return null;
   }
 
-  startBtn.addEventListener("click", async () => {
-    if (!hasPassword()) {
-      return;
+  try {
+    const response = await fetch(`${LAMBDA_URL}?action=${action}`, {
+      method: 'GET',
+      headers: {
+        'X-Password': currentPassword
+      }
+    });
+
+    if (response.status === 403) {
+      log("Mot de passe incorrect !", "error");
+      return null;
     }
 
-    setStatus("Démarrage du serveur", "info");
-    await request("start");
-    await pollForIP();
-  });
-
-  stopBtn.addEventListener("click", async () => {
-    if (!hasPassword()) {
-      return;
+    if (!response.ok) {
+      log(`Erreur API: ${response.status}`, "error");
+      return null;
     }
 
-    setStatus("Mise en veille du serveur", "warning");
-    await request("stop");
-    ipEl.textContent = "aucune";
-    setStatus("Signal d'extinction envoyé", "warning");
-  });
+    return await response.json();
+  } catch (e) {
+    log(`Erreur Réseau: ${e.message}`, "error");
+    return null;
+  }
+}
 
-  refreshBtn.addEventListener("click", async () => {
-    if (!hasPassword()) {
-      return;
-    }
-    await pollForIP();
-  });
+// UI Updates
+function updateStatusUI(data) {
+  if (!data) return;
 
-  function detectPlatform() {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    if (/android/i.test(ua)) {
-      return "android";
-    }
-    if (/iPad|iPhone|iPod/.test(ua)) {
-      return "ios";
-    }
-    return "other";
+  // IP
+  if (data.public_ip) {
+    ipDisplay.textContent = data.public_ip;
+  } else {
+    ipDisplay.textContent = "---.---.---.---";
   }
 
-  async function copyIpToClipboard(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (error) {
-      const area = document.createElement("textarea");
-      area.value = text;
-      document.body.appendChild(area);
-      area.select();
-      document.execCommand("copy");
-      area.remove();
+  // Buttons Logic
+  btnStart.classList.add('hidden');
+  btnStop.classList.add('hidden');
+
+  let statusMsg = "";
+  let statusType = "info";
+
+  if (data.ec2_status === 'running') {
+    if (data.server_status === 'online') {
+      btnStop.classList.remove('hidden');
+      statusMsg = "Serveur EN LIGNE. Prêt à jouer !";
+      statusType = "success";
+    } else {
+      btnStart.classList.remove('hidden');
+      statusMsg = "Instance démarrée. Serveur de jeu éteint.";
+      statusType = "warning";
     }
+  } else {
+    // EC2 Stopped or Pending
+    btnStart.classList.remove('hidden');
+    statusMsg = `Instance ${data.ec2_status}. Serveur éteint.`;
+    statusType = "warning";
   }
 
-  function launchStardew(platform) {
-    if (platform === "ios") {
-      window.location.href = "https://apps.apple.com/app/id1406710800";
-    } else if (platform === "android") {
+  log(statusMsg, statusType);
+}
+
+// Actions
+async function checkStatus() {
+  log("Vérification du statut...", "info");
+  const data = await callApi('get-status');
+  if (data) {
+    updateStatusUI(data);
+    return true; // Success
+  }
+  return false;
+}
+
+// Remember Me Logic
+const rememberMeCheckbox = document.getElementById('remember-me');
+// Check for saved password on load
+window.addEventListener('DOMContentLoaded', () => {
+  const savedPassword = localStorage.getItem('stardew_password');
+  if (savedPassword) {
+    passwordInput.value = savedPassword;
+    rememberMeCheckbox.checked = true;
+    // Optional: Auto-login if desired, but user might want to just have it filled
+    // Let's just fill it for now, or maybe auto-focus the button?
+    // User asked for "se souvenir", usually implies pre-filling.
+  }
+});
+async function handleLogin() {
+  const pwd = passwordInput.value.trim();
+  if (!pwd) return;
+  currentPassword = pwd;
+  log("Authentification...", "info");
+  const success = await checkStatus();
+  if (success) {
+    // Handle Remember Me
+    if (rememberMeCheckbox.checked) {
+      localStorage.setItem('stardew_password', pwd);
+    } else {
+      localStorage.removeItem('stardew_password');
+    }
+    // Show controls and IP card
+    mainInterface.classList.remove('hidden');
+    ipCard.classList.remove('hidden');
+    // Hide login input to clean up UI? Or keep it? 
+    // User said "reprends l'UI de old_app", old_app has input visible.
+    // But we want to prevent re-typing. Let's keep it but maybe blur it.
+    passwordInput.blur();
+  } else {
+    passwordInput.value = "";
+    passwordInput.focus();
+  }
+}
+
+async function startServer() {
+  log("Démarrage en cours...", "info");
+  const data = await callApi('start');
+  if (data) {
+    log("Commande envoyée. Démarrage...", "warning");
+    startPolling();
+  }
+}
+
+async function stopServer() {
+  log("Arrêt en cours...", "info");
+  const data = await callApi('stop');
+  if (data) {
+    log("Commande envoyée. Arrêt...", "warning");
+    startPolling();
+  }
+}
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  // Poll every 5 seconds for 2 minutes
+  let count = 0;
+  pollInterval = setInterval(async () => {
+    count++;
+    await checkStatus();
+    if (count > 24) clearInterval(pollInterval); // Stop after 2 mins
+  }, 5000);
+}
+
+// Copy and Launch Logic
+function copyAndLaunch() {
+  const ip = ipDisplay.textContent;
+  if (!ip || ip.includes("---")) {
+    log("Pas d'adresse IP à copier", "error");
+    return;
+  }
+
+  navigator.clipboard.writeText(ip).then(() => {
+    log("IP Copiée ! Lancement...", "success");
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    if (isIOS) {
+      window.location.href = "https://apps.apple.com/us/app/stardew-valley/id1406710800";
+    } else if (isAndroid) {
       window.location.href = "https://play.google.com/store/apps/details?id=com.chucklefish.stardewvalley";
     }
-  }
-
-  launchBtn.addEventListener("click", async () => {
-    const text = ipEl.textContent;
-    if (!text || text === "aucune") {
-      alert("Aucune IP à copier");
-      return;
-    }
-
-    await copyIpToClipboard(text);
-
-    const platform = detectPlatform();
-    if (platform === "other") {
-      return;
-    }
-
-    launchStardew(platform);
   });
+}
 
-  passwordInput.addEventListener("keydown", async (event) => {
-    if (["Enter", "Go", "Done"].includes(event.key)) {
-      event.preventDefault();
-      await pollForIP();
-    }
-  });
-})();
+// Event Listeners
+passwordInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') handleLogin();
+});
+
+btnRefresh.addEventListener('click', checkStatus);
+btnStart.addEventListener('click', startServer);
+btnStop.addEventListener('click', stopServer);
+btnCopyLaunch.addEventListener('click', copyAndLaunch);
